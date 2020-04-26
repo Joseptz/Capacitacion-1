@@ -1,0 +1,73 @@
+---
+title: "Análisis de Municipalidades"
+subtitle: "Evolución de gasto presupuestal"
+author: "Jose Pajuelo"
+date: "20 de Abril"
+output:
+  tufte::tufte_html: default
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+```
+
+# Introducción
+
+Los datos del reporte fueron extraídos de la página de transparencia presupuestal del ***Minsiterio de Economía y Finanzas*** [Consulta amigable](http://apps5.mineco.gob.pe/transparencia/Navegador/default.aspx) 
+
+El objetivo de este reporte es:
+
+1. Conocer la efectividad de gasto de los gobiernos subnacionales
+2. Evaluar la capacidad técnica de las municipalidades
+
+
+```{r, message=FALSE, echo=FALSE, fig.height=60}
+library(ggplot2)
+library(dplyr)
+
+municipalidades<-read.csv("https://raw.githubusercontent.com/BESTDATASCIENCE/manos-a-la-data/master/data/2020/2020-03-04/municipalidades.csv")
+
+
+municipalidades2 <- municipalidades %>% filter(PROVINCIA=="MUNICIPALIDAD METROPOLITANA DE LIMA")
+
+municipalidades3 <- municipalidades %>% filter(Municipalidad=="MUNICIPALIDAD DISTRITAL DE SAN JUAN DE LURIGANCHO")
+
+p5 <- ggplot(municipalidades2, aes(x = periodo, y = avance))
+(p5 <- p5 + geom_line() +
+     facet_wrap(~Municipalidad, ncol = 2)+
+
+     theme( axis.text = element_text( size = 14 ),
+            axis.text.x = element_text( size = 12 ),
+            axis.title = element_text( size = 14, face = "bold" ),
+            legend.position="none",
+            strip.text = element_text(size = 6))  +
+     labs(title = "Avance presupuestal", subtitle = "Histórico 2007-2019",caption = "Fuente: Consulta Amigable",
+          x="Periodo", y="Avance presupuestal (%)")+ stat_smooth(method=lm))
+
+mediaSJL=round(mean(municipalidades3$avance),2)
+
+```
+
+## *Principales resultados en MD San Juan de Lurigancho*
+
+En los últimos 13 años la media de avance de SJL es de `r mediaSJL`%^[[Beautiful Evidence](http://www.edwardtufte.com/tufte/books_be)], Tufte starts each section with a bit of vertical space, a non-indented paragraph, and sets the first few words of the sentence in small caps. To accomplish this using this style, call the `newthought()` function in **tufte** in an _inline R expression_ `` `r ` `` as demonstrated at the beginning of this paragraph.^[Note you should not assume **tufte** has been attached to your R session. You should either `library(tufte)` in your R Markdown document before you call `newthought()`, or use `tufte::newthought()`.]
+
+```{r, message=FALSE, echo=FALSE}
+
+ggplot(data = municipalidades3) +
+ geom_boxplot(mapping = aes(x = reorder(Municipalidad, avance, FUN = median), y = avance)) +
+ coord_flip() +labs(title = "Avance presupuestal", subtitle = "Histórico 2007-2019",caption = "Fuente: Consulta Amigable",
+                    x="Municipalidades", y="Avance presupuestal (%)")
+
+```
